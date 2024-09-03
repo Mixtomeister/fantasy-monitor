@@ -10,7 +10,6 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
-
 class Player(models.Model):
     playerId = models.IntegerField()
     name = models.CharField(max_length=64)
@@ -32,10 +31,14 @@ class Player(models.Model):
 
     @property
     def market_value_variation(self):
-        current = PlayerUpdate.objects.filter(player=self).latest().market_value
-        prev = PlayerUpdate.objects.filter(player=self).latest().get_next_in_order().market_value
+        updates = PlayerUpdate.objects.filter(player=self).order_by('-date')[0:2]
+        if len(updates) == 2:
+            current = updates[0].market_value
+            prev = updates[1].market_value
 
-        return current - prev
+            return current - prev
+        else:
+            return None
 
     @property
     def status(self):
@@ -43,7 +46,7 @@ class Player(models.Model):
 
     @property
     def total_points(self):
-        return PlayerPoints.objects.filter(player=self).aggregate(total=models.Sum('points')).total
+        return PlayerPoints.objects.filter(player=self).aggregate(total=models.Sum('points'))['total']
 
     def __str__(self):
         return self.name
@@ -74,7 +77,7 @@ class PlayerUpdate(models.Model):
         return f'[{self.date.strftime('%Y-%m-%d')}] [{self.team.name}] {self.player.name}'
     
     class Meta:
-        get_latest_by = "-date"
+        get_latest_by = "date"
 
 class PlayerPoints(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
