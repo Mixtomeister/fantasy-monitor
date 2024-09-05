@@ -94,5 +94,11 @@ class Command(BaseCommand):
                     defaults={
                         "points": playerStat['totalPoints'],
                         "ideal_xi": playerStat['isInIdealFormation'],
+                    },
+                    create_defaults={
+                        "team": team,
+                        "position": int(playerData['positionId']),
+                        "points": playerStat['totalPoints'],
+                        "ideal_xi": playerStat['isInIdealFormation'],
                     }
                 )

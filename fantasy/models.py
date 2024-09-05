@@ -87,6 +87,8 @@ class PlayerUpdate(models.Model):
 
 class PlayerPoints(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.RESTRICT, null=True)
+    position = models.IntegerField(choices=PlayerPosition)
     round = models.IntegerField()
     points = models.IntegerField()
     ideal_xi = models.BooleanField()

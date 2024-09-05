@@ -37,7 +37,7 @@ class PlayerUpdateAdmin(admin.ModelAdmin):
     player_name_field.short_description = "Player Name"
 
 class PlayerPointsAdmin(admin.ModelAdmin):
-    list_display = ('player', 'round', 'points', 'ideal_xi')
+    list_display = ('player', 'team', 'position', 'round', 'points', 'ideal_xi')
     list_filter = ['round', 'ideal_xi']
     search_fields = ["player__name"]
 
