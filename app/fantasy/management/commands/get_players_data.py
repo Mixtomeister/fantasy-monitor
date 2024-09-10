@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from fantasy.api import FantasyAPI
 from fantasy.models import Player, Team, PlayerPoints, PlayerUpdate
 
-import os, json
+import os, json, requests
 from datetime import datetime
 
 
@@ -18,6 +18,11 @@ class Command(BaseCommand):
             help="Data source file path for database population, overriding API-based latest data retrieval."
         )
         parser.add_argument(
+            "--url",
+            type=str,
+            help="Data source url path for database population, overriding API-based latest data retrieval."
+        )
+        parser.add_argument(
             "--date",
             type=str,
             help="Date of the data in the specified file (format: YYYY-MM-DD)."
@@ -25,6 +30,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         file_path = options['file']
+        url_path = options['url']
         date_str = options['date']
 
         if file_path:
@@ -48,6 +54,23 @@ class Command(BaseCommand):
             
             self.stdout.write(f"File loaded successfully with {len(data)} records.")
             self.stdout.write(f"Data date: {data_dt}")
+
+        elif url_path:
+            if not date_str:
+                raise CommandError("The --date parameter is required when specifying the --file parameter.")
+            
+            try:
+                data_dt = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                raise CommandError("The --date parameter must be in the format YYYY-MM-DD.")
+            
+            try:
+                res = requests.get(url_path)
+                res.raise_for_status()
+
+                data = res.json()
+            except Exception as e:
+                raise CommandError(str(e))
 
         else:
             self.stdout.write("No file specified. Proceeding with API-based data retrieval.")
